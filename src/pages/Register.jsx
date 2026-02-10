@@ -7,21 +7,39 @@ const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useContext(UserContext);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { register } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulación de registro - en un hito futuro se hará la petición a la API
+    setError("");
+    setLoading(true);
+
     if (name && email && password) {
-      login(email);
-      navigate("/");
+      const result = await register(email, password);
+      
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.error || "Error al registrar usuario");
+      }
+    } else {
+      setError("Por favor, completa todos los campos");
     }
+    
+    setLoading(false);
   };
 
   return (
     <div className="container mt-4">
       <h2>Registro</h2>
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="name" className="form-label">Nombre</label>
@@ -32,6 +50,7 @@ const Register = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
         <div className="mb-3">
@@ -43,6 +62,7 @@ const Register = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
         <div className="mb-3">
@@ -54,9 +74,16 @@ const Register = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
-        <button type="submit" className="btn btn-primary">Registrarse</button>
+        <button 
+          type="submit" 
+          className="btn btn-primary"
+          disabled={loading}
+        >
+          {loading ? "Registrando..." : "Registrarse"}
+        </button>
       </form>
     </div>
   );

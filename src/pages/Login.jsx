@@ -6,21 +6,39 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulación de login - en un hito futuro se hará la petición a la API
+    setError("");
+    setLoading(true);
+
     if (email && password) {
-      login(email);
-      navigate("/");
+      const result = await login(email, password);
+      
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.error || "Error al iniciar sesión");
+      }
+    } else {
+      setError("Por favor, completa todos los campos");
     }
+    
+    setLoading(false);
   };
 
   return (
     <div className="container mt-4">
       <h2>Iniciar Sesión</h2>
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="email" className="form-label">Email</label>
@@ -31,6 +49,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
         <div className="mb-3">
@@ -42,9 +61,16 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
-        <button type="submit" className="btn btn-primary">Iniciar Sesión</button>
+        <button 
+          type="submit" 
+          className="btn btn-primary"
+          disabled={loading}
+        >
+          {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+        </button>
       </form>
     </div>
   );
